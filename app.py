@@ -1,8 +1,9 @@
-from flask import Flask
-from flask import json
+from flask import Flask,json,render_template
 import logging
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 @app.route('/status')
 def healthcheck():
@@ -12,7 +13,7 @@ def healthcheck():
             mimetype='application/json'
     )
 
-    app.logger.info('Status request successfull')
+    logger.info('Status request successfull')
     return response
 
 @app.route('/metrics')
@@ -23,7 +24,7 @@ def metrics():
             mimetype='application/json'
     )
 
-    app.logger.info('Metrics request successfull')
+    logger.info('Metrics request successfull')
     return response
 
 @app.route('/')
@@ -32,5 +33,4 @@ def index():
 
 if __name__ == "__main__":
     ## stream logs to a file
-    logging.basicConfig(filename='app.log',level=logging.DEBUG)
-    app.run(port=8080)
+    app.run(host='0.0.0.0',port=8080,debug=True)
