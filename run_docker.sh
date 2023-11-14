@@ -6,7 +6,7 @@ ECR_REPOSITORY_NAME="udacity/capstone"
 latest_version =$(aws ecr describe-images \
     --region $AWS_REGION \
     --repository-name $ECR_REPOSITORY_NAME \
-    --query 'images|sort_by(@, &imagePushedAt)|[-1].imageTags[0]' \
+    --query 'imageDetails|sort_by(@, &imagePushedAt)|[-1].imageTags[0]' \
     --output text)
 
 echo $latest_version
