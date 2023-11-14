@@ -27,13 +27,11 @@ def metrics():
     return response
 
 @app.route("/")
-def hello():
-    app.logger.info('Main request successfull')
-
-    return "Hello World!"
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 if __name__ == "__main__":
     ## stream logs to a file
     logging.basicConfig(filename='app.log',level=logging.DEBUG)
-    
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(port=8080)
