@@ -1,0 +1,21 @@
+---
+version: 2.1
+orbs:
+    aws-cli: circleci/aws-cli@2.0.3
+
+jobs:
+    lint-code:
+        docker:
+            - image: python:3.8
+        steps:
+            - checkout
+            - run:
+                  name: Install Dependencies
+                  command: |
+                      python --version
+                      make setup
+                      make install
+workflows:
+    udacity_capstone:
+        jobs:
+            - lint-code
