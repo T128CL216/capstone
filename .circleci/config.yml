@@ -45,7 +45,7 @@ jobs:
                     if [ -z "$latest_version" ]; then
                         latest_version="0.0.0"
                     fi
-                    IFS='.' read -r -a version_segments <<< "$latest_version"
+                    IFS='.' read -r -a version_segments \<<< "$latest_version"
                     last_segment=$((version_segments[2] + 1))
                     new_version="${version_segments[0]}.${version_segments[1]}.$last_segment"
                     echo "Latest Docker image Version: $latest_version"
