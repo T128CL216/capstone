@@ -15,11 +15,42 @@ jobs:
                       make setup
                       make install
                       make hadolint_install
-                      
             - run:
                   name: Lint Code
                   command: |
                       make lint
+    buil_docker_image:
+        docker:
+            - image: python:3.8
+        steps:
+            - checkout
+            - run:
+                  name: Install Dependencies
+                  command: |
+                    make setup
+                    make install
+                    pip install awscli
+            - run:
+                  name: Retrieve Latest Docker TAG for AWS ECR
+                  command: |
+                    AWS_REGION="us-east-1"
+                    AWS_ACCOUNT_ID="510590228660"
+                    AWS_ECR_DNS=".dkr.ecr.us-east-1.amazonaws.com"
+                    ECR_REPOSITORY_NAME="udacity/capstone"
+                    latest_version=$(aws ecr describe-images \
+                        --region $AWS_REGION \
+                        --repository-name $ECR_REPOSITORY_NAME \
+                        --query 'imageDetails|sort_by(@, &imagePushedAt)|[-1].imageTags[0]' \
+                        --output text)
+                    if [ -z "$latest_version" ]; then
+                        latest_version="0.0.0"
+                    fi
+                    IFS='.' read -r -a version_segments <<< "$latest_version"
+                    last_segment=$((version_segments[2] + 1))
+                    new_version="${version_segments[0]}.${version_segments[1]}.$last_segment"
+                    echo "Latest Docker image Version: $latest_version"
+                    echo "New Docker image version: $new_version"
+
 workflows:
     udacity_capstone:
         jobs:
