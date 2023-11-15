@@ -14,6 +14,8 @@ jobs:
                   command: |
                       make setup
                       make install
+                      make hadolint_install
+                      
             - run:
                   name: Lint Code
                   command: |
