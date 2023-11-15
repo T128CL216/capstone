@@ -12,9 +12,12 @@ jobs:
             - run:
                   name: Install Dependencies
                   command: |
-                      python --version
                       make setup
                       make install
+            - run:
+                  name: Lint Code
+                  command: |
+                      make lint
 workflows:
     udacity_capstone:
         jobs:
