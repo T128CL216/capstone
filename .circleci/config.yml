@@ -64,39 +64,10 @@ jobs:
                     echo "tag : $tag"
                     docker build --tag=$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag .
             - run:
-                  name: Save image as tar
+                  name: Push Image to AWS EKS
                   command: |
-                    mkdir -p ${CIRCLE_WORKING_DIRECTORY}/images
-                    docker image save -o ${CIRCLE_WORKING_DIRECTORY}/images/image_${CIRCLE_WORKFLOW_ID:0:7}.tar $AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
-            - persist_to_workspace:
-                root: ${CIRCLE_WORKING_DIRECTORY}
-                paths:
-                    - images
-    push_docker_image:
-        docker:
-            - image: docker:20.10.18
-        steps:
-            - checkout
-            - setup_remote_docker
-            - attach_workspace:
-                at: .
-            - run:
-                  name: Install Dependencies
-                  command: |
-                    apk add --no-cache python3 py3-pip
-                    apk add --no-cache curl
-                    ln -sf python3 /usr/bin/python
-                    python3 -m ensurepip
-                    pip3 install --upgrade pip
-                    pip install awscli
-            - run:
-                  name: Load image
-                  command: |
-                    docker image load < "images/image_${CIRCLE_WORKFLOW_ID:0:7}.tar"
-            - run:
-                  name: Inspect Loaded Image
-                  command: |
-                    docker images
+                    docker push $AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
+                    echo "$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag successfully pushed to AWS ECR"
 
 workflows:
     udacity_capstone:
@@ -104,5 +75,3 @@ workflows:
             - lint-code
             - build_docker_image:
                   requires: [lint-code]
-            - push_docker_image:
-                  requires: [build_docker_image]
