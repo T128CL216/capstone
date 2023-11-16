@@ -70,7 +70,7 @@ jobs:
             - persist_to_workspace:
                   root: /
                   paths:
-                      - images
+                      - ${CIRCLE_WORKING_DIRECTORY}/images
             # - run:
             #       name: Push Image to AWS EKS
             #       command: |
