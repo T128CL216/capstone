@@ -21,14 +21,12 @@ jobs:
                       make lint
     buil_docker_image:
         docker:
-            - image: python:3.8
+            - image: docker:20.10.6
         steps:
             - checkout
             - run:
                   name: Install Dependencies
                   command: |
-                    make setup
-                    make install
                     pip install awscli
             - run:
                   name: Retrieve Latest Docker TAG from AWS ECR Repo and publish to kvdb
@@ -52,6 +50,11 @@ jobs:
                     echo "New Docker image version: $new_version"
                     curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7}  -d $new_version
                     echo "New Docker Tag published to kvdb.io"
+            - run:
+                name: Build Docker image
+                  command: |
+                    tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
+                    echo "tag : $tag"
 
 workflows:
     udacity_capstone:
