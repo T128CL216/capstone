@@ -15,6 +15,7 @@ jobs:
                       make setup
                       make install
                       make hadolint_install
+                      pip install awscli
             - run:
                   name: Lint Code
                   command: |
@@ -46,14 +47,14 @@ jobs:
             - image: docker:20.10.6
         steps:
             - checkout
-            - run:
-                  name: Install Dependencies
-                  command: |
-                    apk add --no-cache python3 py3-pip
-                    ln -sf python3 /usr/bin/python
-                    python3 -m ensurepip
-                    pip3 install --upgrade pip
-                    pip install awscli
+            # - run:
+            #       name: Install Dependencies
+            #       command: |
+            #         apk add --no-cache python3 py3-pip
+            #         ln -sf python3 /usr/bin/python
+            #         python3 -m ensurepip
+            #         pip3 install --upgrade pip
+            #         pip install awscli
             - run:
                   name: Retrieve Latest Docker TAG from AWS ECR Repo and publish to kvdb
                   command: |
