@@ -51,7 +51,7 @@ jobs:
                     curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7}  -d $new_version
                     echo "New Docker Tag published to kvdb.io"
             - run:
-                name: Build Docker image
+                  name: Build Docker image
                   command: |
                     tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
                     echo "tag : $tag"
@@ -61,4 +61,4 @@ workflows:
         jobs:
             - lint-code
             - buil_docker_image:
-                requires: [lint-code]
+                  requires: [lint-code]
