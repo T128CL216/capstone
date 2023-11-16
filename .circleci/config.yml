@@ -40,7 +40,7 @@ jobs:
                     echo "New Docker Tag published to kvdb.io"
     build_docker_image:
         docker:
-            - image: docker:20.10.6
+            - image: docker:20.10.18
         steps:
             - checkout
             - setup_remote_docker
@@ -67,14 +67,14 @@ jobs:
                   name: Save image as tar
                   command: |
                     mkdir -p images
-                    docker image save -o "images/image_${CIRCLE_WORKFLOW_ID:0:7}" "$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag"
+                    docker image save -o "images/image_${CIRCLE_WORKFLOW_ID:0:7}.tar" "$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag"
             - persist_to_workspace:
                 root: .
                 paths:
                     - images
     push_docker_image:
         docker:
-            - image: docker:20.10.6
+            - image: docker:20.10.18
         steps:
             - checkout
             - setup_remote_docker
