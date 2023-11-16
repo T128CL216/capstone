@@ -266,15 +266,67 @@ Resources:
       VpcId: !Ref VPC
 
 Outputs:
+  
+  Vpc:
+    Description: A reference to the created VPC
+    Value: !Ref VPC
+    Export:
+      Name: !Sub ${EnvironmentName}-VPCID
+  
+  VPCPublicRouteTable:
+    Description: Public Routing
+    Value: !Ref PublicRouteTable
+    Export:
+      Name: !Sub  ${EnvironmentName}-PUB-RT
+  
+  VPCPrivateRouteTable01:
+    Description: Public Routing
+    Value: !Ref PrivateRouteTable01
+    Export:
+      Name: !Sub  ${EnvironmentName}-PRI1-RT
+      
+  VPCPrivateRouteTable02:
+    Description: Public Routing
+    Value: !Ref PrivateRouteTable02
+    Export:
+      Name: !Sub  ${EnvironmentName}-PRI2-RT
+  
+  PublicSubnets:
+    Description: A list of Public Subnets
+    Value: !Join [ ",", [ !Ref PublicSubnet01, !Ref PublicSubnet02 ]]
+    Export:
+      Name: !Sub  ${EnvironmentName}-PUB-NETS
 
-  SubnetIds:
-    Description: Subnets IDs in the VPC
-    Value: !Join [ ",", [ !Ref PublicSubnet01, !Ref PublicSubnet02, !Ref PrivateSubnet01, !Ref PrivateSubnet02 ] ]
+  PrivateSubnets:
+    Description: A list of Private Subnets
+    Value: !Join [ ",", [ !Ref PrivateSubnet01, !Ref PrivateSubnet02 ]]
+    Export:
+      Name: !Sub  ${EnvironmentName}-PRIV-NETS
+      
+  PublicSubnet1:
+    Description: A reference to the public subnet in the 1st AvailabilityZone
+    Value: !Ref PublicSubnet01
+    Export:
+      Name: !Sub  ${EnvironmentName}-PUB1-SN
+  
+  PublicSubnet2:
+    Description: A reference to the public subnet in the 2nd AvailabilityZone
+    Value: !Ref PublicSubnet02
+    Export:
+      Name: !Sub  ${EnvironmentName}-PUB2-SN
+      
+  PrivateSubnet1:
+    Description: A reference to the Private subnet in the 1st AvailabilityZone
+    Value: !Ref PrivateSubnet01
+    Export:
+      Name: !Sub  ${EnvironmentName}-PRI1-SN
+  
+  PrivateSubnet2:
+    Description: A reference to the Private subnet in the 2nd AvailabilityZone
+    Value: !Ref PrivateSubnet02
+    Export:
+      Name: !Sub  ${EnvironmentName}-PRI2-SN
 
   SecurityGroups:
     Description: Security group for the cluster control plane communication with worker nodes
     Value: !Join [ ",", [ !Ref ControlPlaneSecurityGroup ] ]
-
-  VpcId:
-    Description: The VPC Id
-    Value: !Ref VPC

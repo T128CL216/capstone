@@ -1,0 +1,11 @@
+[
+	{
+		"ParameterKey": "EKSIAMRoleName",
+		"ParameterValue": "EKSAdmin"
+	},
+	{
+		"ParameterKey": "EKSClusterName",
+		"ParameterValue": "udacity-capstone-eks-cluster"
+	}
+]
+
