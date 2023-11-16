@@ -58,11 +58,16 @@ jobs:
                   command: |
                     docker --version
             - run:
-                  name: Build Docker image
+                  name: Build Docker image and save it
                   command: |
                     tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
                     echo "tag : $tag"
                     docker build --tag=$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag .
+                    docker save -o /tmp/$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag.tar $AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
+            - run:
+                  name: List Docker image
+                  command: |
+                    docker images
 
 workflows:
     udacity_capstone:
