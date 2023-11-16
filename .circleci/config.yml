@@ -66,10 +66,10 @@ jobs:
             - run:
                   name: Save image as tar
                   command: |
-                    mkdir -p images
-                    docker image save -o "images/image_${CIRCLE_WORKFLOW_ID:0:7}.tar" "$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag"
+                    mkdir -p ${CIRCLE_WORKING_DIRECTORY}/images
+                    docker image save -o ${CIRCLE_WORKING_DIRECTORY}/images/image_${CIRCLE_WORKFLOW_ID:0:7}.tar $AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
             - persist_to_workspace:
-                root: .
+                root: ${CIRCLE_WORKING_DIRECTORY}
                 paths:
                     - images
     push_docker_image:
@@ -92,7 +92,7 @@ jobs:
             - run:
                   name: Load image
                   command: |
-                    docker image load < "images/image_${CIRCLE_WORKFLOW_ID:0:7}"
+                    docker image load < "images/image_${CIRCLE_WORKFLOW_ID:0:7}.tar"
             - run:
                   name: Inspect Loaded Image
                   command: |
