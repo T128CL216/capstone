@@ -27,7 +27,7 @@ jobs:
             - run:
                   name: Install Dependencies
                   command: |
-                    apk add --no-cache python3=3.8.10-r0
+                    apk add --no-cache python3 py3-pip
                     ln -sf python3 /usr/bin/python
                     python3 -m ensurepip
                     pip3 install --upgrade pip
