@@ -23,9 +23,8 @@ jobs:
             - run:
                   name: Retrieve Latest Docker TAG from AWS ECR Repo and publish to kvdb
                   command: |
-                    ECR_REPOSITORY_NAME="udacity/capstone"
                     latest_version=$(aws ecr describe-images \
-                        --region $AWS_REGION \
+                        --region $AWS_DEFAULT_REGION \
                         --repository-name $ECR_REPOSITORY_NAME \
                         --query 'imageDetails|sort_by(@, &imagePushedAt)|[-1].imageTags[0]' \
                         --output text)
@@ -60,9 +59,6 @@ jobs:
             - run:
                   name: Build Docker image
                   command: |
-                    AWS_REGION="us-east-1"
-                    AWS_ACCOUNT_ID="510590228660"
-                    AWS_ECR_DNS=".dkr.ecr.us-east-1.amazonaws.com"
                     tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
                     echo "tag : $tag"
                     docker build --tag=$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag .
