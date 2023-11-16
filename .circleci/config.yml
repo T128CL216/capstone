@@ -40,18 +40,17 @@ jobs:
                     echo "New Docker Tag published to kvdb.io"
     build_docker_image:
         docker:
-            - image: docker:20.10.18
+            - image: cimg/python:3.8
         steps:
             - checkout
-            - setup_remote_docker
             - run:
                   name: Install Dependencies
                   command: |
-                    apk add --no-cache python3 py3-pip
-                    apk add --no-cache curl
-                    ln -sf python3 /usr/bin/python
-                    python3 -m ensurepip
-                    pip3 install --upgrade pip
+                    # apk add --no-cache python3 py3-pip
+                    # apk add --no-cache curl
+                    # ln -sf python3 /usr/bin/python
+                    # python3 -m ensurepip
+                    # pip3 install --upgrade pip
                     pip install awscli
             - run:
                   name: Retrieve Latest Docker TAG from AWS ECR Repo and publish to kvdb
@@ -66,7 +65,7 @@ jobs:
             - run:
                   name: Push Image to AWS EKS
                   command: |
-                    docker push "$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag"
+                    docker push $AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
                     echo "$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag successfully pushed to AWS ECR"
 
 workflows:
