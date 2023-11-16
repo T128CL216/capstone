@@ -58,14 +58,40 @@ jobs:
                   command: |
                     docker --version
             - run:
-                  name: Build Docker image and save it
+                  name: Build Docker image
                   command: |
                     tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
                     echo "tag : $tag"
                     docker build --tag=$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag .
-                    docker save -o /tmp/image_$tag.tar $AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
+            - run:
+                  name: Save Docker Image to workspace
+                  command: |
+                    docker save -o /tmp/image.tar $AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
             - run:
                   name: List Docker image
+                  command: |
+                    docker images
+    push_docker_image:
+        docker:
+            - image: docker:20.10.6
+        steps:
+            - checkout
+            - setup_remote_docker
+            - run:
+                  name: Install Dependencies
+                  command: |
+                    apk add --no-cache python3 py3-pip
+                    apk add --no-cache curl
+                    ln -sf python3 /usr/bin/python
+                    python3 -m ensurepip
+                    pip3 install --upgrade pip
+                    pip install awscli
+            - run:
+                  name: Restore Docker Image From cache
+                  command: |
+                    docker load -i /tmp/image.tar
+            - run:
+                  name: List Docker images
                   command: |
                     docker images
 
@@ -75,3 +101,5 @@ workflows:
             - lint-code
             - build_docker_image:
                   requires: [lint-code]
+            - push_docker_image:
+                  requires: [build_docker_image]
