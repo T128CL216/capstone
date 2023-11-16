@@ -103,8 +103,8 @@ workflows:
         jobs:
             - lint-code:
                   filters:
-                  branches:
-                      only:
+                    branches:
+                        only:
                           - main
                           - dev-branch
             - build_docker_image:
