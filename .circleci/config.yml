@@ -66,7 +66,7 @@ jobs:
             - run:
                   name: Push Image to AWS EKS
                   command: |
-                    docker push $AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
+                    docker push "$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag"
                     echo "$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag successfully pushed to AWS ECR"
 
 workflows:
