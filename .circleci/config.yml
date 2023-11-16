@@ -63,17 +63,23 @@ jobs:
                     tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
                     echo "tag : $tag"
                     docker build --tag=$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag .
-                    docker save -o /tmp/image.tar $AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
             - run:
-                  name: List Docker image
+                  name: Save image as tar
                   command: |
-                    docker images
+                    mkdir -p images
+                    docker image save -o "images/image_${CIRCLE_WORKFLOW_ID:0:7}" "$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag"
+            - persist_to_workspace:
+                root: .
+                paths:
+                    - images
     push_docker_image:
         docker:
             - image: docker:20.10.6
         steps:
             - checkout
             - setup_remote_docker
+            - attach_workspace:
+                at: .
             - run:
                   name: Install Dependencies
                   command: |
@@ -84,11 +90,11 @@ jobs:
                     pip3 install --upgrade pip
                     pip install awscli
             - run:
-                  name: Restore Docker Image From cache
+                  name: Load image
                   command: |
-                    docker load -i /tmp/image.tar
+                    docker image load < "images/image_${CIRCLE_WORKFLOW_ID:0:7}"
             - run:
-                  name: List Docker images
+                  name: Inspect Loaded Image
                   command: |
                     docker images
 
