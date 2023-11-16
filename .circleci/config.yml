@@ -58,14 +58,10 @@ jobs:
                   command: |
                     docker --version
             - run:
-                  name: Build Docker image
+                  name: Build Docker image and save to workspace
                   command: |
                     tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
                     echo "tag : $tag"
-                    docker build --tag=$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag .
-            - run:
-                  name: Save Docker Image to workspace
-                  command: |
                     docker save -o /tmp/image.tar $AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
             - run:
                   name: List Docker image
