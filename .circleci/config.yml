@@ -92,8 +92,8 @@ jobs:
                   name: lists Docker Image
                   command: docker images
             - run:
-                name: Push Docker Image to AWS ECR
-                command: |
+                  name: Push Docker Image to AWS ECR
+                  command: |
                     tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
                     aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.$AWS_ECR_DNS
                     docker push $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
@@ -101,8 +101,23 @@ jobs:
 workflows:
     udacity_capstone:
         jobs:
-            - lint-code
+            - lint-code:
+                  filters:
+                  branches:
+                      only:
+                          - main
+                          - dev-branch
             - build_docker_image:
                   requires: [lint-code]
+                  filters:
+                      branches:
+                          only:
+                              - main
+                              - dev-branch
             - push_docker_image:
                   requires: [build_docker_image]
+                  filters:
+                      branches:
+                          only:
+                              - main
+                              - dev-branch
