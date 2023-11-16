@@ -47,14 +47,12 @@ jobs:
             - run:
                   name: Install Dependencies
                   command: |
-                    yum -y install make
-                    # apk add --no-cache python3 py3-pip
-                    # apk add --no-cache curl
-                    # ln -sf python3 /usr/bin/python
-                    # python3 -m ensurepip
-                    # pip3 install --upgrade pip
-                    # pip install awscli
-                    make python_install
+                    apk add --no-cache python3 py3-pip
+                    apk add --no-cache curl
+                    ln -sf python3 /usr/bin/python
+                    python3 -m ensurepip
+                    pip3 install --upgrade pip
+                    pip install awscli
             - run:
                   name: Retrieve Latest Docker TAG from AWS ECR Repo and publish to kvdb
                   command: |
@@ -65,19 +63,11 @@ jobs:
                     tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
                     echo "tag : $tag"
                     docker build --tag=$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag .
-                    # docker push $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
-                    # echo "$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag successfully pushed to AWS ECR"
                     docker image save -o ~/image.tar $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
             - persist_to_workspace:
                   root: ~/
                   paths:
                       - image.tar
-            # - run:
-            #       name: Push Image to AWS EKS
-            #       command: |
-            #         tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
-            #         docker push $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
-            #         echo "$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag successfully pushed to AWS ECR"
     push_docker_image:
         docker:
             - image: docker:20.10.18
@@ -89,14 +79,12 @@ jobs:
             - run:
                   name: Install Dependencies
                   command: |
-                    yum -y install make
-                    # apk add --no-cache python3 py3-pip
-                    # apk add --no-cache curl
-                    # ln -sf python3 /usr/bin/python
-                    # python3 -m ensurepip
-                    # pip3 install --upgrade pip
-                    # pip install awscli
-                    make python_install
+                    apk add --no-cache python3 py3-pip
+                    apk add --no-cache curl
+                    ln -sf python3 /usr/bin/python
+                    python3 -m ensurepip
+                    pip3 install --upgrade pip
+                    pip install awscli
             - run:
                   name: Load Docker Image
                   command: docker load -i ~/image.tar
