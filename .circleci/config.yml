@@ -23,9 +23,6 @@ jobs:
             - run:
                   name: Retrieve Latest Docker TAG from AWS ECR Repo and publish to kvdb
                   command: |
-                    AWS_REGION="us-east-1"
-                    AWS_ACCOUNT_ID="510590228660"
-                    AWS_ECR_DNS=".dkr.ecr.us-east-1.amazonaws.com"
                     ECR_REPOSITORY_NAME="udacity/capstone"
                     latest_version=$(aws ecr describe-images \
                         --region $AWS_REGION \
@@ -47,42 +44,28 @@ jobs:
             - image: docker:20.10.6
         steps:
             - checkout
-            # - run:
-            #       name: Install Dependencies
-            #       command: |
-            #         apk add --no-cache python3 py3-pip
-            #         ln -sf python3 /usr/bin/python
-            #         python3 -m ensurepip
-            #         pip3 install --upgrade pip
-            #         pip install awscli
+            - run:
+                  name: Install Dependencies
+                  command: |
+                    apk add --no-cache python3 py3-pip
+                    apk add --no-cache curl
+                    ln -sf python3 /usr/bin/python
+                    python3 -m ensurepip
+                    pip3 install --upgrade pip
+                    pip install awscli
             - run:
                   name: Retrieve Latest Docker TAG from AWS ECR Repo and publish to kvdb
                   command: |
                     docker --version
-                    # AWS_REGION="us-east-1"
-                    # AWS_ACCOUNT_ID="510590228660"
-                    # AWS_ECR_DNS=".dkr.ecr.us-east-1.amazonaws.com"
-                    # ECR_REPOSITORY_NAME="udacity/capstone"
-                    # latest_version=$(aws ecr describe-images \
-                    #     --region $AWS_REGION \
-                    #     --repository-name $ECR_REPOSITORY_NAME \
-                    #     --query 'imageDetails|sort_by(@, &imagePushedAt)|[-1].imageTags[0]' \
-                    #     --output text)
-                    # if [ -z "$latest_version" ]; then
-                    #     latest_version="0.0.0"
-                    # fi
-                    # IFS='.' read -r -a version_segments \<<< "$latest_version"
-                    # last_segment=$((version_segments[2] + 1))
-                    # new_version="${version_segments[0]}.${version_segments[1]}.$last_segment"
-                    # echo "Latest Docker image Version: $latest_version"
-                    # echo "New Docker image version: $new_version"
-                    # curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7}  -d $new_version
-                    # echo "New Docker Tag published to kvdb.io"
             - run:
                   name: Build Docker image
                   command: |
+                    AWS_REGION="us-east-1"
+                    AWS_ACCOUNT_ID="510590228660"
+                    AWS_ECR_DNS=".dkr.ecr.us-east-1.amazonaws.com"
                     tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
                     echo "tag : $tag"
+                    docker build --tag=$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag .
 
 workflows:
     udacity_capstone:
