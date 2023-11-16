@@ -38,7 +38,7 @@ jobs:
                     echo "New Docker image version: $new_version"
                     curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7}  -d $new_version
                     echo "New Docker Tag published to kvdb.io"
-    buil_docker_image:
+    build_docker_image:
         docker:
             - image: docker:20.10.6
         steps:
@@ -63,7 +63,7 @@ jobs:
                     tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
                     echo "tag : $tag"
                     docker build --tag=$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag .
-                    docker save -o /tmp/$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag.tar $AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
+                    docker save -o /tmp/$ECR_REPOSITORY_NAME:$tag.tar $AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
             - run:
                   name: List Docker image
                   command: |
@@ -73,5 +73,5 @@ workflows:
     udacity_capstone:
         jobs:
             - lint-code
-            - buil_docker_image:
+            - build_docker_image:
                   requires: [lint-code]
