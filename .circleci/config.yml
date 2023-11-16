@@ -35,6 +35,7 @@ jobs:
             - run:
                   name: Retrieve Latest Docker TAG from AWS ECR Repo and publish to kvdb
                   command: |
+                    #!/bin/bash
                     AWS_REGION="us-east-1"
                     AWS_ACCOUNT_ID="510590228660"
                     AWS_ECR_DNS=".dkr.ecr.us-east-1.amazonaws.com"
