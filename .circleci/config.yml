@@ -65,12 +65,11 @@ jobs:
                     docker build --tag=$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag .
                     # docker push $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
                     # echo "$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag successfully pushed to AWS ECR"
-                    mkdir -p ${CIRCLE_WORKING_DIRECTORY}/images
-                    docker image save -o ${CIRCLE_WORKING_DIRECTORY}/images/image.tar $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
+                    docker image save -o ~/image.tar $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
             - persist_to_workspace:
-                  root: /
+                  root: ~/
                   paths:
-                      - ${CIRCLE_WORKING_DIRECTORY}/images
+                      - image.tar
             # - run:
             #       name: Push Image to AWS EKS
             #       command: |
@@ -82,7 +81,7 @@ jobs:
             - image: docker:20.10.18
         steps:
             - attach_workspace:
-                  at: /
+                  at: ~/
             - checkout
             - setup_remote_docker
             - run:
@@ -96,7 +95,7 @@ jobs:
                     pip install awscli
             - run:
                   name: Load Docker Image
-                  command: docker load -i ${CIRCLE_WORKING_DIRECTORY}/images/image.tar
+                  command: docker load -i ~/image.tar
             - run:
                   name: lists Docker Image
                   command: docker images
