@@ -68,7 +68,7 @@ jobs:
                     mkdir -p ${CIRCLE_WORKING_DIRECTORY}/images
                     docker image save -o ${CIRCLE_WORKING_DIRECTORY}/images/image.tar $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
             - persist_to_workspace:
-                  root: ${CIRCLE_WORKING_DIRECTORY}
+                  root: /
                   paths:
                       - images
             # - run:
