@@ -65,16 +65,46 @@ jobs:
                     docker build --tag=$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag .
                     # docker push $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
                     # echo "$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag successfully pushed to AWS ECR"
+                    mkdir -p ${CIRCLE_WORKING_DIRECTORY}/images
+                    docker image save -o ${CIRCLE_WORKING_DIRECTORY}/images/image.tar $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
+            - persist_to_workspace:
+                  root: ${CIRCLE_WORKING_DIRECTORY}
+                  paths:
+                      - images
+            # - run:
+            #       name: Push Image to AWS EKS
+            #       command: |
+            #         tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
+            #         docker push $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
+            #         echo "$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag successfully pushed to AWS ECR"
+    push_docker_image:
+        docker:
+            - image: docker:20.10.18
+        steps:
+            - attach_workspace:
+                  at: /
+            - checkout
+            - setup_remote_docker
             - run:
-                  name: Push Image to AWS EKS
+                  name: Install Dependencies
                   command: |
-                    tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
-                    docker push $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
-                    echo "$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag successfully pushed to AWS ECR"
-
+                    apk add --no-cache python3 py3-pip
+                    apk add --no-cache curl
+                    ln -sf python3 /usr/bin/python
+                    python3 -m ensurepip
+                    pip3 install --upgrade pip
+                    pip install awscli
+            - run:
+                  name: Load Docker Image
+                  command: docker load -i ${CIRCLE_WORKING_DIRECTORY}/images/image.tar
+            - run:
+                  name: lists Docker Image
+                  command: docker images
 workflows:
     udacity_capstone:
         jobs:
             - lint-code
             - build_docker_image:
                   requires: [lint-code]
+            - push_docker_image:
+                  requires: [build_docker_image]
