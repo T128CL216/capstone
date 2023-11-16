@@ -10,11 +10,11 @@ hadolint_install:
 		chmod +x /bin/hadolint
 		
 python_install:
-	apk add --no-cache python3 py3-pip
-    apk add --no-cache curl
-    ln -sf python3 /usr/bin/python
-    python3 -m ensurepip
-    pip3 install --upgrade pip
+	apk add --no-cache python3 py3-pip &&\
+    apk add --no-cache curl &&\
+    ln -sf python3 /usr/bin/python &&\
+    python3 -m ensurepip &&\
+    pip3 install --upgrade pip &&\
     pip install awscli
 
 lint:
