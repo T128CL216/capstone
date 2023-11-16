@@ -96,8 +96,8 @@ jobs:
                 command: |
                     tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
                     aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.$AWS_ECR_DNS
-                    docker push $AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:tag
-                    echo "$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:tag successfully pushed to AWS ECR"
+                    docker push $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
+                    echo "$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag successfully pushed to AWS ECR"
 workflows:
     udacity_capstone:
         jobs:
