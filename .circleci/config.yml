@@ -31,7 +31,7 @@ jobs:
                     make install
                     pip install awscli
             - run:
-                  name: Retrieve Latest Docker TAG for AWS ECR
+                  name: Retrieve Latest Docker TAG from AWS ECR Repo and publish to kvdb
                   command: |
                     AWS_REGION="us-east-1"
                     AWS_ACCOUNT_ID="510590228660"
@@ -50,6 +50,8 @@ jobs:
                     new_version="${version_segments[0]}.${version_segments[1]}.$last_segment"
                     echo "Latest Docker image Version: $latest_version"
                     echo "New Docker image version: $new_version"
+                    curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7}  -d $new_version
+                    echo "New Docker Tag published to kvdb.io"
 
 workflows:
     udacity_capstone:

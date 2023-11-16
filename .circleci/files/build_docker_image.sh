@@ -29,4 +29,4 @@ docker build --tag=$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$new_version
 
 # Push docker image to AWS ECR
 docker push $AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$new_version
-echo "$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$new_version successfully pushed to AWS ECR"
+echo "$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$new_version successfully pushed to AWS"
