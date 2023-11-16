@@ -40,17 +40,18 @@ jobs:
                     echo "New Docker Tag published to kvdb.io"
     build_docker_image:
         docker:
-            - image: cimg/python:3.8
+            - image: docker:20.10.18
         steps:
             - checkout
+            - setup_remote_docker
             - run:
                   name: Install Dependencies
                   command: |
-                    # apk add --no-cache python3 py3-pip
-                    # apk add --no-cache curl
-                    # ln -sf python3 /usr/bin/python
-                    # python3 -m ensurepip
-                    # pip3 install --upgrade pip
+                    apk add --no-cache python3 py3-pip
+                    apk add --no-cache curl
+                    ln -sf python3 /usr/bin/python
+                    python3 -m ensurepip
+                    pip3 install --upgrade pip
                     pip install awscli
             - run:
                   name: Retrieve Latest Docker TAG from AWS ECR Repo and publish to kvdb
@@ -61,12 +62,12 @@ jobs:
                   command: |
                     tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
                     echo "tag : $tag"
-                    docker build --tag=$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag .
+                    docker build --tag=$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag .
             - run:
                   name: Push Image to AWS EKS
                   command: |
-                    docker push $AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
-                    echo "$AWS_ACCOUNT_ID$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag successfully pushed to AWS ECR"
+                    docker push $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
+                    echo "$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag successfully pushed to AWS ECR"
 
 workflows:
     udacity_capstone:
