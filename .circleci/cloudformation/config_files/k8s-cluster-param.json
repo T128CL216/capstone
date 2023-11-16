@@ -1,5 +1,9 @@
 [
 	{
+		"ParameterKey": "EnvironmentName",
+		"ParameterValue": "UdacityCapstone"
+	},
+	{
 		"ParameterKey": "EKSIAMRoleName",
 		"ParameterValue": "EKSAdmin"
 	},

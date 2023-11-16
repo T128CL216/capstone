@@ -1,0 +1,3 @@
+
+./create_stack.sh udacity-capstone-k8s-nodes templates/k8s-cluster.yml config_files/k8s-cluster-param.json
+./update_stack.sh udacity-capstone-network templates/network.yml config_files/network-param.json

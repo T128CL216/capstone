@@ -330,3 +330,5 @@ Outputs:
   SecurityGroups:
     Description: Security group for the cluster control plane communication with worker nodes
     Value: !Join [ ",", [ !Ref ControlPlaneSecurityGroup ] ]
+    Export:
+      Name: !Sub  ${EnvironmentName}-ControlPan-SG
