@@ -95,6 +95,7 @@ jobs:
                     # pip3 install --upgrade pip
                     # pip install awscli
                     make python_install
+            - run:
                   name: Load Docker Image
                   command: docker load -i ~/image.tar
             - run:
