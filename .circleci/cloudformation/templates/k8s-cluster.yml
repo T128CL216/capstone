@@ -65,15 +65,14 @@ Parameters:
   Subnets:
     Type: "List<AWS::EC2::Subnet::Id>"
     Description: The subnets where workers can be created.
-    Default:
-     - ImportValue: !Sub "${EnvironmentName}-PUB1-SN"
-     - ImportValue: !Sub "${EnvironmentName}-PUB2-SN"
+    Default: [Fn::ImportValue: !Sub "${EnvironmentName}-PUB1-SN", Fn::ImportValue: !Sub "${EnvironmentName}-PUB2-SN"]
 
   VpcId:
     Type: "AWS::EC2::VPC::Id"
     Description: The VPC of the worker instances
     Default: 
-     - ImportValue: !Sub "${EnvironmentName}-ControlPan-SG"
+      - Fn::ImportValue: !Sub "${EnvironmentName}-VPCID"
+      
 
   Conditions:
     HasNodeImageId: !Not
