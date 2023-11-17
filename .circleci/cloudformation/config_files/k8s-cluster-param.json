@@ -12,12 +12,12 @@
 		"ParameterValue": "udacity-capstone-eks-cluster"
 	},
 	{
-		"ParameterKey": "BootstrapArguments",
-		"ParameterValue": ""
-	},
-	{
 		"ParameterKey": "KeyName",
 		"ParameterValue": "mac"
+	},
+	{
+		"ParameterKey": "NodeImageId",
+		"ParameterValue": "ami-0230bd60aa48260c6"
 	}
 ]
 
