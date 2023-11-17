@@ -12,11 +12,11 @@ Parameters:
     Type: String
   ImageUrl:
     Type: String
-    Default: 119841056280.dkr.ecr.us-east-1.amazonaws.com/nano-devops-05:latest
+    Default: 510590228660.dkr.ecr.us-east-1.amazonaws.com/udacity/capstone:1.0.1
     Description: Docker image url to be deployed
   ServiceName:
     Type: String
-    Default: helloWorld
+    Default: blue-green-service
     Description: Name of the service
 
 Resources:
@@ -74,7 +74,7 @@ Resources:
         - TargetGroupArn: !Ref AppTargetGroup
           Type: 'forward'
       LoadBalancerArn: !Ref AppLB
-      Port: 80
+      Port: 8080
       Protocol: HTTP
 
   ECSRole:
@@ -152,7 +152,7 @@ Resources:
           Memory: 512
           Image: !Ref ImageUrl
           PortMappings:
-            - ContainerPort: 80
+            - ContainerPort: 8080
 
   Service:
     Type: AWS::ECS::Service
@@ -176,7 +176,7 @@ Resources:
       TaskDefinition: !Ref TaskDefinition
       LoadBalancers:
         - ContainerName: !Ref ServiceName
-          ContainerPort: 80
+          ContainerPort: 8080
           TargetGroupArn: !Ref AppTargetGroup
 
   AppTargetGroup:
@@ -189,7 +189,7 @@ Resources:
       HealthyThresholdCount: 2
       TargetType: ip
       Name: !Ref ServiceName
-      Port: 80
+      Port: 8080
       Protocol: HTTP
       UnhealthyThresholdCount: 2
       VpcId:
