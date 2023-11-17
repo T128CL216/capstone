@@ -15,13 +15,5 @@
 	{
 		"ParameterKey": "PublicSubnet02Block",
 		"ParameterValue": "10.0.1.0/24"
-	},
-	{
-		"ParameterKey": "PrivateSubnet01Block",
-		"ParameterValue": "10.0.2.0/24"
-	},
-	{
-		"ParameterKey": "PrivateSubnet02Block",
-		"ParameterValue": "10.0.3.0/24"
 	}
 ]
