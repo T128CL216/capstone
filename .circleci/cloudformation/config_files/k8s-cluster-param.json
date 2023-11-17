@@ -10,6 +10,14 @@
 	{
 		"ParameterKey": "EKSClusterName",
 		"ParameterValue": "udacity-capstone-eks-cluster"
+	},
+	{
+		"ParameterKey": "BootstrapArguments",
+		"ParameterValue": ""
+	},
+	{
+		"ParameterKey": "KeyName",
+		"ParameterValue": "mac"
 	}
 ]
 

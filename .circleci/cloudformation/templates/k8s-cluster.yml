@@ -12,6 +12,102 @@ Parameters:
     Type: String
     Description: The desired name of your AWS EKS Cluster.
 
+  ClusterControlPlaneSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup::Id"
+    Description: The security group of the cluster control plane.
+    Default: 
+      - Fn::ImportValue: !Sub "${EnvironmentName}-ControlPan-SG"
+  KeyName:
+    Type: "AWS::EC2::KeyPair::KeyName"
+    Description: The EC2 Key Pair to allow SSH access to the instances
+
+  NodeAutoScalingGroupDesiredCapacity:
+    Type: Number
+    Default: 3
+    Description: Desired capacity of Node Group ASG.
+
+  NodeAutoScalingGroupMaxSize:
+    Type: Number
+    Default: 4
+    Description: Maximum size of Node Group ASG. Set to at least 1 greater than NodeAutoScalingGroupDesiredCapacity.
+
+  NodeAutoScalingGroupMinSize:
+    Type: Number
+    Default: 1
+    Description: Minimum size of Node Group ASG.
+
+  NodeGroupName:
+    Type: String
+    Description: Unique identifier for the Node Group.
+    Default: "BlueDeployment"
+
+  NodeImageId:
+    Type: String
+    Default: ""
+    Description: (Optional) Specify your own custom image ID. This value overrides any AWS Systems Manager Parameter Store value specified above.
+
+  NodeImageIdSSMParam:
+    Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
+    Default: /aws/service/eks/optimized-ami/1.14/amazon-linux-2/recommended/image_id
+    Description: AWS Systems Manager Parameter Store parameter of the AMI ID for the worker node instances.
+    
+  NodeInstanceType:
+    Type: String
+    Default: t3.medium
+    ConstraintDescription: Must be a valid EC2 instance type
+    Description: EC2 instance type for the node instances
+
+  NodeVolumeSize:
+    Type: Number
+    Default: 20
+    Description: Node volume size
+
+  Subnets:
+    Type: "List<AWS::EC2::Subnet::Id>"
+    Description: The subnets where workers can be created.
+    Default:
+     - ImportValue: !Sub "${EnvironmentName}-PUB1-SN"
+     - ImportValue: !Sub "${EnvironmentName}-PUB2-SN"
+
+  VpcId:
+    Type: "AWS::EC2::VPC::Id"
+    Description: The VPC of the worker instances
+    Default: 
+     - ImportValue: !Sub "${EnvironmentName}-ControlPan-SG"
+
+  Conditions:
+    HasNodeImageId: !Not
+      - "Fn::Equals":
+          - Ref: NodeImageId
+          - ""
+
+Metadata:
+  "AWS::CloudFormation::Interface":
+    ParameterGroups:
+      - Label:
+          default: EKS Cluster
+        Parameters:
+          - EKSClusterName
+          - ClusterControlPlaneSecurityGroup
+      - Label:
+          default: Worker Node Configuration
+        Parameters:
+          - NodeGroupName
+          - NodeAutoScalingGroupMinSize
+          - NodeAutoScalingGroupDesiredCapacity
+          - NodeAutoScalingGroupMaxSize
+          - NodeInstanceType
+          - NodeImageIdSSMParam
+          - NodeImageId
+          - NodeVolumeSize
+          - KeyName
+      - Label:
+          default: Worker Network Configuration
+        Parameters:
+          - VpcId
+          - Subnets
+
+
 Resources:
   EKSIAMRole:
     Type: 'AWS::IAM::Role'
@@ -39,8 +135,6 @@ Resources:
         SecurityGroupIds:
           - Fn::ImportValue: !Sub "${EnvironmentName}-ControlPan-SG"
         SubnetIds:
-        - Fn::ImportValue: !Sub "${EnvironmentName}-PUB1-SN"
-        - Fn::ImportValue: !Sub "${EnvironmentName}-PUB2-SN"
         - Fn::ImportValue: !Sub "${EnvironmentName}-PRI1-SN"
         - Fn::ImportValue: !Sub "${EnvironmentName}-PRI2-SN"
     DependsOn: [EKSIAMRole]
