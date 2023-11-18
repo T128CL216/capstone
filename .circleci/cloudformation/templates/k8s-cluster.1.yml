@@ -65,6 +65,7 @@ Resources:
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
         - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+        - "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
   EKSNodeGroup:
     Type: AWS::EKS::Nodegroup
     Properties:
@@ -90,6 +91,8 @@ Resources:
             Principal:
               Service:
                 - ecs-tasks.amazonaws.com
+                - ecs.amazonaws.com
+                - ec2.amazonaws.com
             Action:
               - 'sts:AssumeRole'
       Policies:
@@ -104,10 +107,19 @@ Resources:
                   - 'ecr:GetDownloadUrlForLayer'
                   - 'ecr:BatchGetImage'
                 Resource: '*'
+        - PolicyName: 'allow-update-assume-role-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 'iam:UpdateAssumeRolePolicy'
+                Resource: !Sub "arn:aws:iam::510590228660:role/eks-task-role-${EnvironmentName}"
   EKSTaskDefinition:
     Type: "AWS::ECS::TaskDefinition"
     Properties:
       TaskRoleArn: !GetAtt EKSTaskRole.Arn
+      ExecutionRoleArn: !GetAtt EKSTaskRole.Arn
       Family: myTaskDefinition
       NetworkMode: awsvpc
       RequiresCompatibilities:
