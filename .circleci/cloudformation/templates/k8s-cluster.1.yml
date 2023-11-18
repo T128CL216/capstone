@@ -1,35 +1,163 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Description: Create an EKS cluster and deploy a Docker image
+
 Parameters:
   EnvironmentName:
-        Description: An environment name that will be prefixed to resource names
-        Type: String
-        
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+    Default: UdacityProject
+
 Resources:
-  
-  NodeInstanceRole:
-    Type: "AWS::IAM::Role"
+  EKSCluster:
+    Type: AWS::EKS::Cluster
     Properties:
-      RoleName: !Sub ${EnvironmentName}-cluster-role
+      Name: vpc-0e80ce6474cf2fe49
+      Version: '1.28'
+      RoleArn: !GetAtt EKSClusterRole.Arn
+      ResourcesVpcConfig:
+        SecurityGroupIds:
+          - !Ref EKSSecurityGroup
+        SubnetIds:
+          - Fn::ImportValue: 
+              !Sub "${EnvironmentName}-PUB1-SN"
+          - Fn::ImportValue: 
+              !Sub "${EnvironmentName}-PUB2-SN"
+  EKSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to our load balancer
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${EnvironmentName}-VPCID"
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 0
+        ToPort: 65535
+        CidrIp: 0.0.0.0/0
+  EKSClusterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "eks-cluster-role-${EnvironmentName}"
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - eks.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  EKSNodeGroupRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "eks-nodegroup-role-${EnvironmentName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
               Service:
                 - ec2.amazonaws.com
             Action:
-              - "sts:AssumeRole"
+              - 'sts:AssumeRole'
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-        - "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
         - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-        - "arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess"
-        
-  NodeInstanceProfile:
-    Type: "AWS::IAM::InstanceProfile"
+  EKSNodeGroup:
+    Type: AWS::EKS::Nodegroup
     Properties:
-      InstanceProfileName: !Sub ${EnvironmentName}-cluster-profile
-      Path: /
-      Roles:
-        - Ref: NodeInstanceRole
-    DependsOn: [NodeInstanceRole]
+      ClusterName: !Ref EKSCluster
+      NodeRole: !GetAtt EKSNodeGroupRole.Arn
+      Subnets:
+        - Fn::ImportValue: 
+            !Sub "${EnvironmentName}-PUB1-SN"
+        - Fn::ImportValue: 
+            !Sub "${EnvironmentName}-PUB2-SN"
+      ScalingConfig:
+        DesiredSize: 2
+        MaxSize: 3
+        MinSize: 1
+  EKSTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "eks-task-role-${EnvironmentName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'allow-ecr-pull'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 'ecr:GetAuthorizationToken'
+                  - 'ecr:BatchCheckLayerAvailability'
+                  - 'ecr:GetDownloadUrlForLayer'
+                  - 'ecr:BatchGetImage'
+                Resource: '*'
+  EKSTaskDefinition:
+    Type: "AWS::ECS::TaskDefinition"
+    Properties:
+      TaskRoleArn: !GetAtt EKSTaskRole.Arn
+      Family: myTaskDefinition
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+            - "FARGATE"
+      Cpu: '256'
+      Memory: '512'
+      ContainerDefinitions:
+        - Name: 'myAppContainer'
+          Image: '510590228660.dkr.ecr.us-east-1.amazonaws.com/udacity/capstone:1.0.1'
+          PortMappings:
+            - ContainerPort: 8080
+              HostPort: 8080
+              Protocol: tcp
+          Memory: '512'
+  EKSLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Subnets:
+      - Fn::ImportValue: !Sub "${EnvironmentName}-PUB1-SN"
+      - Fn::ImportValue: !Sub "${EnvironmentName}-PUB2-SN"
+      SecurityGroups:
+      - Fn::GetAtt:
+        - EKSSecurityGroup
+        - GroupId
+  EKSListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: 'forward'
+          TargetGroupArn: !Ref EKSTargetGroup
+      LoadBalancerArn: !Ref EKSLoadBalancer
+      Port: 80
+      Protocol: HTTP
+  EKSTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: '/'
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Port: 8080
+      Protocol: HTTP
+      TargetType: ip
+      UnhealthyThresholdCount: 2
+      VpcId: !ImportValue
+        Fn::Sub: "${EnvironmentName}-VPCID"
+
+
+Outputs:
+  EKSAppURL:
+    Description: URL to access the web app
+    Value: !Sub "http://${EKSLoadBalancer.DNSName}:8080"
