@@ -1,0 +1,6 @@
+[
+    { "ParameterKey": "DesiredCount", "ParameterValue": "3" },
+    { "ParameterKey": "EnvironmentName", "ParameterValue": "UdacityCapstone" },
+    { "ParameterKey": "ImageUrl", "ParameterValue": "510590228660.dkr.ecr.us-east-1.amazonaws.com/udacity/capstone:1.0.1" },
+    { "ParameterKey": "ServiceName", "ParameterValue": "blue-service" }
+]
