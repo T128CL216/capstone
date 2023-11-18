@@ -20,10 +20,6 @@ These are the policies I have added to my admin user :
   ----------------------------------------------------------
   ![alt text](https://github.com/T128CL216/udacity-capstone/blob/feature-create_k8s/screenshots/Screen%20Shot%202023-11-18%20at%202.25.39%20PM.png)
   ----------------------------------------------------------
-  ![alt text](https://github.com/T128CL216/udacity-capstone/blob/feature-create_k8s/screenshots/Screen%20Shot%202023-11-18%20at%202.31.29%20PM.png)
-  ----------------------------------------------------------
-  ![alt text](https://github.com/T128CL216/udacity-capstone/blob/feature-create_k8s/screenshots/Screen%20Shot%202023-11-18%20at%202.32.45%20PM.png)
-  ----------------------------------------------------------
 I have already checked the open questions like this ones:
 
 - https://knowledge.udacity.com/questions/983362
