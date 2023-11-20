@@ -14,11 +14,11 @@ jobs:
             chmod +x kubectl
             mv kubectl /usr/local/bin/
             kubectl version --client
+            aws eks --region us-east-1 update-kubeconfig --name capstone-eks
 
       - run:
           name: Deploy Green Image
           command: |
-            aws eks --region us-east-1 update-kubeconfig --name capstone-eks
             kubectl create deployment green-deploy --image=510590228660.dkr.ecr.us-east-1.amazonaws.com/udacity/capstone:1.0.4 --replicas 1
             kubectl expose deployment/green-deploy --type="LoadBalancer" --port 8080
   smoke_test:
@@ -33,6 +33,7 @@ jobs:
             chmod +x kubectl
             mv kubectl /usr/local/bin/
             kubectl version --client
+            aws eks --region us-east-1 update-kubeconfig --name capstone-eks
       - run:
           name: Smoke Test Green deployment
           command: |
