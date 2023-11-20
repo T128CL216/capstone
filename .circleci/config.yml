@@ -65,8 +65,6 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - attach_workspace:
-           at: ~/
       - run:
           name: Install tar
           command: | 
@@ -75,6 +73,8 @@ jobs:
           name: Install GZIP
           command: | 
             yum install -y gzip
+      - attach_workspace:
+           at: ~/
       - run:
           name: Install kubectl
           command: |
