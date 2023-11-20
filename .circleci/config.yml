@@ -39,20 +39,25 @@ jobs:
           command: |
             GREEN_BASE_URL=$(kubectl get svc green-deploy -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
             GREEN_SERVICE_URL="http://${GREEN_BASE_URL}:8080/status"
-            echo ${GREEN_SERVICE_URL}
-            curl -s ${GREEN_SERVICE_URL}
             if curl -s ${GREEN_SERVICE_URL} | grep "OK" 
             then
               echo "Setting success variable for routing switch"
-              echo "success=true" >> $BASH_ENV
+              SMOKE_TEST_SUCCESS=true
+              echo "$SMOKE_TEST_SUCCESS" >> ~/smoke_test_status.txt
             else
               echo "Green Deployment smoke test failed"
             fi
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - my_variable.txt
             
   switch_routing:
     docker:
       - image: amazon/aws-cli
     steps:
+      - attach_workspace:
+          at: ~/
       - checkout
       - run:
           name: Install kubectl
@@ -64,8 +69,9 @@ jobs:
       - run:
           name: Switch Routing to Green Deployment
           command: |
-            echo "$success"
-            if [ "$success" == "true" ]; then
+            source ~/smoke_test_status.txt
+            echo "Reusing persisted variable: $SMOKE_TEST_SUCCESS"
+            if [ "$SMOKE_TEST_SUCCESS" == "true" ]; then
                 echo "Routing switched to Green Deployment"
               else
                 echo "Smoke test failed, not switching routing"
