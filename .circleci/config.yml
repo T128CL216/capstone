@@ -48,12 +48,12 @@ jobs:
       - run:
           name: Switch Routing to Green Deployment
           command: |
-          echo "$success"
-          if [ "$success" == "true" ]; then
-              echo "Routing switched to Green Deployment"
-            else
-              echo "Smoke test failed, not switching routing"
-            fi
+            echo "$success"
+            if [ "$success" == "true" ]; then
+                echo "Routing switched to Green Deployment"
+              else
+                echo "Smoke test failed, not switching routing"
+              fi
   
 
 workflows:
