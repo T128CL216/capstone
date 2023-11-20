@@ -21,9 +21,50 @@ jobs:
             aws eks --region us-east-1 update-kubeconfig --name capstone-eks
             kubectl create deployment green-deploy --image=510590228660.dkr.ecr.us-east-1.amazonaws.com/udacity/capstone:1.0.4 --replicas 1
             kubectl expose deployment/green-deploy --type="LoadBalancer" --port 8080
+  smoke_test:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Smoke Test Green deployment
+          command: |
+           # Assuming the LoadBalancer service is named green-deploy
+            GREEN_SERVICE_URL=$(kubectl get svc green-deploy -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            RESPONSE=$(curl -s http://$GREEN_SERVICE_URL:8080)
+            echo "Response from Green Deployment: $RESPONSE"
+            if [[ "$RESPONSE" == *"Welcome to the Green Deployment!"* ]]; then
+              echo "Setting success variable for routing switch"
+              echo "success=true" >> $BASH_ENV
+            else
+              echo "Green Deployment smoke test failed"
+            fi
+            
+  switch_routing:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Switch Routing to Green Deployment
+          command: |
+          echo "$success"
+          if [ "$success" == "true" ]; then
+              echo "Routing switched to Green Deployment"
+            else
+              echo "Smoke test failed, not switching routing"
+            fi
+  
 
 workflows:
   version: 2
   build_and_deploy:
     jobs:
       - deploy_green
+      - smoke_test:
+          requires:
+            - deploy_green
+      - switch_routing:
+          requires:
+            - smoke_test
+  
