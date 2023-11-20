@@ -51,7 +51,7 @@ jobs:
             then
               echo "Setting success variable for routing switch"
               SMOKE_TEST_SUCCESS=true
-              echo "$SMOKE_TEST_SUCCESS" >> ~/smoke_test_status.txt
+              echo "$SMOKE_TEST_SUCCESS" > ~/smoke_test_status.txt
             else
               echo "Green Deployment smoke test failed"
             fi
