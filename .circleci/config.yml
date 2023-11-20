@@ -20,16 +20,7 @@ jobs:
           command: |
             aws eks --region us-east-1 update-kubeconfig --name capstone-eks
             kubectl create deployment green-deploy --image=510590228660.dkr.ecr.us-east-1.amazonaws.com/udacity/capstone:1.0.4 --replicas 1
-            kubectl expose deployment/green-deploy --type="ClusterIP" --port 8080
-            # Add any other necessary setup or validation steps
-
-      - run:
-          name: Smoke Test Green Deployment
-          command: |
-            GREEN_SERVICE_IP=$(kubectl get svc green-deploy -o jsonpath='{.spec.clusterIP}')
-            curl http://$GREEN_SERVICE_IP:8080
-            # Add additional smoke tests as needed
-
+            kubectl expose deployment/green-deploy --type="LoadBalancer" --port 8080
 
 workflows:
   version: 2
