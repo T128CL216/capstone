@@ -27,6 +27,14 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install tar
+          command: | 
+            yum install -y tar
+      - run:
+          name: Install GZIP
+          command: | 
+            yum install -y gzip
+      - run:
           name: Install kubectl
           command: |
             curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.28.3/2023-11-14/bin/linux/amd64/kubectl
@@ -56,9 +64,15 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps:
-      - attach_workspace:
-          at: ~/
       - checkout
+      - run:
+          name: Install tar
+          command: | 
+            yum install -y tar
+      - run:
+          name: Install GZIP
+          command: | 
+            yum install -y gzip
       - run:
           name: Install kubectl
           command: |
