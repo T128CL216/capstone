@@ -1,141 +1,29 @@
----
 version: 2.1
-orbs:
-    aws-cli: circleci/aws-cli@2.0.3
-    aws-eks: circleci/aws-eks@2.2.0
-    kubernetes: circleci/kubernetes@1.3
 
 jobs:
-    lint-code:
-        docker:
-            - image: python:3.8
-        steps:
-            - checkout
-            - run:
-                  name: Install Dependencies
-                  command: |
-                      make setup
-                      make install
-                      make hadolint_install
-                      pip install awscli
-            - run:
-                  name: Lint Code
-                  command: |
-                      make lint
-            - run:
-                  name: Retrieve Latest Docker TAG from AWS ECR Repo and publish to kvdb
-                  command: |
-                    latest_version=$(aws ecr describe-images \
-                        --region $AWS_DEFAULT_REGION \
-                        --repository-name $ECR_REPOSITORY_NAME \
-                        --query 'imageDetails|sort_by(@, &imagePushedAt)|[-1].imageTags[0]' \
-                        --output text)
-                    if [ -z "$latest_version" ]; then
-                        latest_version="0.0.0"
-                    fi
-                    IFS='.' read -r -a version_segments \<<< "$latest_version"
-                    last_segment=$((version_segments[2] + 1))
-                    new_version="${version_segments[0]}.${version_segments[1]}.$last_segment"
-                    echo "Latest Docker image Version: $latest_version"
-                    echo "New Docker image version: $new_version"
-                    curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7}  -d $new_version
-                    echo "New Docker Tag published to kvdb.io"
-    build_docker_image:
-        docker:
-            - image: docker:20.10.18
-        steps:
-            - checkout
-            - setup_remote_docker
-            - run:
-                  name: Install Dependencies
-                  command: |
-                    apk add --no-cache python3 py3-pip
-                    apk add --no-cache curl
-                    ln -sf python3 /usr/bin/python
-                    python3 -m ensurepip
-                    pip3 install --upgrade pip
-                    pip install awscli
-            - run:
-                  name: Retrieve Latest Docker TAG from AWS ECR Repo and publish to kvdb
-                  command: |
-                    docker --version
-            - run:
-                  name: Build Docker image and Save it
-                  command: |
-                    tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
-                    echo "tag : $tag"
-                    docker build --tag=$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag .
-                    docker image save -o ~/image.tar $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
-            - persist_to_workspace:
-                  root: ~/
-                  paths:
-                      - image.tar
-    push_docker_image:
-        docker:
-            - image: docker:20.10.18
-        steps:
-            - attach_workspace:
-                  at: ~/
-            - checkout
-            - setup_remote_docker
-            - run:
-                  name: Install Dependencies
-                  command: |
-                    apk add --no-cache python3 py3-pip
-                    apk add --no-cache curl
-                    ln -sf python3 /usr/bin/python
-                    python3 -m ensurepip
-                    pip3 install --upgrade pip
-                    pip install awscli
-            - run:
-                  name: Load Docker Image
-                  command: docker load -i ~/image.tar
-            - run:
-                  name: lists Docker Image
-                  command: docker images
-            - run:
-                  name: Push Docker Image to AWS ECR
-                  command: |
-                    tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
-                    aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.$AWS_ECR_DNS
-                    docker push $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
-                    echo "$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag successfully pushed to AWS ECR"
-    create-deployment:
-        docker:
-            - image: cimg/python:3.10
-        steps:
-            - checkout
-            - run:
-                  name: Push Docker Image to AWS ECR
-                  command: |
-                    kubectl create deployment blue-deploy --image=510590228660.dkr.ecr.us-east-1.amazonaws.com/udacity/capstone:1.0.3 --replicates 1 &&
-                      kubectl expose deployment/blue-deploy --type="LoadBalancer" --port 8080
-    
+  deploy_green:
+    docker:
+      - image: circleci/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Deploy Green Image
+          command: |
+            aws eks --region us-east-1 update-kubeconfig --name capstone-eks
+            kubectl create deployment green-deploy --image=510590228660.dkr.ecr.us-east-1.amazonaws.com/udacity/capstone:1.0.4 --replicas 1
+            kubectl expose deployment/green-deploy --type="ClusterIP" --port 8080
+            # Add any other necessary setup or validation steps
+
+      - run:
+          name: Smoke Test Green Deployment
+          command: |
+            GREEN_SERVICE_IP=$(kubectl get svc green-deploy -o jsonpath='{.spec.clusterIP}')
+            curl http://$GREEN_SERVICE_IP:8080
+            # Add additional smoke tests as needed
+
+
 workflows:
-    udacity_capstone:
-        jobs:
-            - lint-code:
-                  filters:
-                    branches:
-                        only:
-                          - main
-                          - dev-branch
-            - build_docker_image:
-                  requires: [lint-code]
-                  filters:
-                      branches:
-                          only:
-                              - main
-                              - dev-branch
-            - push_docker_image:
-                  requires: [build_docker_image]
-                  filters:
-                      branches:
-                          only:
-                              - main
-                              - dev-branch
-            - create-deployment:
-                  filters:
-                          branches:
-                              only:
-                                - feature-create_k8s
+  version: 2
+  build_and_deploy:
+    jobs:
+      - deploy_green:
