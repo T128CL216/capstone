@@ -58,7 +58,7 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - ~/smoke_test_status.txt
+            - smoke_test_status.txt
             
   switch_routing:
     docker:
