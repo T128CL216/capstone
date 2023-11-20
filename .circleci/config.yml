@@ -27,6 +27,13 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install kubectl
+          command: |
+            curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.28.3/2023-11-14/bin/linux/amd64/kubectl
+            chmod +x kubectl
+            mv kubectl /usr/local/bin/
+            kubectl version --client
+      - run:
           name: Smoke Test Green deployment
           command: |
            # Assuming the LoadBalancer service is named green-deploy
@@ -45,6 +52,13 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
+      - run:
+          name: Install kubectl
+          command: |
+            curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.28.3/2023-11-14/bin/linux/amd64/kubectl
+            chmod +x kubectl
+            mv kubectl /usr/local/bin/
+            kubectl version --client
       - run:
           name: Switch Routing to Green Deployment
           command: |
