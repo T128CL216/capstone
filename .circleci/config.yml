@@ -37,8 +37,9 @@ jobs:
       - run:
           name: Smoke Test Green deployment
           command: |
-            GREEN_SERVICE_URL=$(kubectl get svc green-deploy -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-            if curl -s http://${GREEN_SERVICE_URL}:8080/status | grep "OK" 
+            GREEN_BASE_URL=$(kubectl get svc green-deploy -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            GREEN_SERVICE_URL="http://${GREEN_SERVICE_URL}:8080/status"
+            if curl -s ${GREEN_SERVICE_URL} | grep "OK" 
             then
               echo "Setting success variable for routing switch"
               echo "success=true" >> $BASH_ENV
