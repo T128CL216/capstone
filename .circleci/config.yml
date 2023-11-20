@@ -87,7 +87,7 @@ jobs:
       - run:
           name: Switch Routing to Green Deployment
           command: |
-            source ~/smoke_test_status.txt
+            SMOKE_TEST_SUCCESS=$(<~/smoke_test_status.txt)
             echo "Reusing persisted variable: $SMOKE_TEST_SUCCESS"
             if [ "$SMOKE_TEST_SUCCESS" == "true" ]; then
                 echo "Routing switched to Green Deployment"
@@ -100,7 +100,7 @@ workflows:
   version: 2
   build_and_deploy:
     jobs:
-     # - deploy_green
+      #- deploy_green
       - smoke_test
       - switch_routing:
           requires:
