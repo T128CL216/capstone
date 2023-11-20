@@ -52,6 +52,7 @@ jobs:
               echo "Setting success variable for routing switch"
               echo 'SMOKE_TEST_SUCCESS=true' >> $BASH_ENV
               echo 'export SMOKE_TEST_SUCCESS' >> $BASH_ENV
+              echo "Persisting variable: $SMOKE_TEST_SUCCESS"
               echo "$SMOKE_TEST_SUCCESS" > ~/smoke_test_status.txt
             else
               echo "Green Deployment smoke test failed"
