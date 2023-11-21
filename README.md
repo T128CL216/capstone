@@ -1,38 +1,50 @@
-<<<<<<< HEAD
 # Project Name
 
-**[Your Project Name]**
+**Udacity-Cloud-DevOps-Engineer-Capstone**
 
 ## Introduction
 
-Welcome to [Your Project Name]! This project showcases the implementation of a robust CI/CD pipeline for deploying a Python web application on AWS Kubernetes (EKS). The pipeline incorporates best practices for Docker containerization, linting, blue/green deployment, and Kubernetes cluster management. This README provides a quick overview of the project structure, setup, and deployment process.
+Welcome to my Udacity-Cloud-DevOps-Engineer-Capstone Project! This project showcases the implementation of a robust CI/CD pipeline for deploying a Python web application on AWS Kubernetes (EKS). The pipeline incorporates best practices for Docker containerization, linting, blue/green deployment, and Kubernetes cluster management. This README provides a quick overview of the project structure, setup, and deployment process.
 
 ## Project Overview
 
-Briefly describe your project and its purpose. Highlight the key technologies used.
+### Objective
+1. **Pipeline Automation**: Designing and automating a comprehensive CI/CD pipeline using CircleCI .
+2. **Docker Containerization**: Building and managing Docker containers for the Python web application.
+3. **Infrastructure as Code (IaC)**: Utilizing Ansible or CloudFormation to create and manage the AWS EKS cluster.
+4. **Blue/Green Deployment**: Implementing a reliable blue/green deployment strategy for seamless updates.
+5. **Testing and Verification**: Ensuring the reliability of the pipeline through linting, testing, and post-deployment verifications.
+
+### Application Details
+
+The Python web application used in this project is a simple "Hello World" application developed with Flask. The application serves as a demonstration of the CI/CD pipeline capabilities, with an initial deployment featuring a blue-themed background. The project further introduces a green-themed update, showcasing the ability to deploy changes without downtime.
+
+### Key Features
+
+1. **Automated Pipeline**: A fully automated CI/CD pipeline that encompasses linting, building Docker containers, and deploying to AWS EKS.
+2. **Blue/Green Deployment**: Implementation of a blue/green deployment strategy for minimizing downtime during updates.
+3. **Infrastructure Automation**: Use of Ansible or CloudFormation to provision and manage the AWS EKS cluster.
+4. **Scalability and Resilience**: Leveraging the benefits of Kubernetes for scalable and resilient application deployments.
 
 ## Project Structure
+- [![App](https://github.com/T128CL216/udacity-capstone/blob/main/app.py)](app.py)
+- [![Pipeline Configuration](https://github.com/T128CL216/udacity-capstone/blob/a60775898d3777531cffe490c58645b7f6d5997b/.circleci/config.yml)](CircleCI)
+- [![Infrastructure as Code](https://github.com/T128CL216/udacity-capstone/tree/main/k8s)](K8s)
 
-- **App**: [Link to your app code]
-- **Pipeline Configuration**: [Link to your CircleCI configuration]
-- **Infrastructure as Code**: [Link to your CloudFormation or Ansible code for Kubernetes deployment]
 
 ## Set Up Pipeline
-
-### GitHub Repository
-
-- All project code is stored in the GitHub repository: [Link to GitHub Repository]
 
 ### Docker Image Repository
 
 - Docker images are stored in a centralized repository.
-- Images are pushed to the repository after a clean build.
-
+- Images are pushed to the repository after a clean build
+- First, an initial "Blue" Image was pushed to the ECR Repo
+- Then, to demonstrate the Blue/Green deployment, a new "Green Image " was built in Circle CI pipeline and pushed to the same ECR repo wiht a new version
 ## Build Docker Container
 
 - Code is linted as part of the Continuous Integration step.
-  - ![Linting Success](link-to-lint-success-screenshot.png)
-  - ![Linting Error](link-to-lint-error-screenshot.png)
+  - ![Linting Success](https://github.com/T128CL216/udacity-capstone/blob/a60775898d3777531cffe490c58645b7f6d5997b/screenshots/06-LINT_SUCCESS.png)
+  - ![Linting Error](https://github.com/T128CL216/udacity-capstone/blob/a60775898d3777531cffe490c58645b7f6d5997b/screenshots/05-LINT_ERROR.png)
 - Docker container is built and tested in the pipeline.
 
 ## Successful Deployment
