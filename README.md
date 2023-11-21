@@ -11,7 +11,7 @@ Welcome to my Udacity-Cloud-DevOps-Engineer-Capstone Project! This project showc
 ### Objective
 1. **Pipeline Automation**: Designing and automating a comprehensive CI/CD pipeline using CircleCI .
 2. **Docker Containerization**: Building and managing Docker containers for the Python web application.
-3. **Infrastructure as Code (IaC)**: Utilizing Ansible or CloudFormation to create and manage the AWS EKS cluster.
+3. **Infrastructure as Code (IaC)**: Utilizing CloudFormation to create and manage the AWS EKS cluster.
 4. **Blue/Green Deployment**: Implementing a reliable blue/green deployment strategy for seamless updates.
 5. **Testing and Verification**: Ensuring the reliability of the pipeline through linting, testing, and post-deployment verifications.
 
@@ -23,7 +23,7 @@ The Python web application used in this project is a simple "Hello World" applic
 
 1. **Automated Pipeline**: A fully automated CI/CD pipeline that encompasses linting, building Docker containers, and deploying to AWS EKS.
 2. **Blue/Green Deployment**: Implementation of a blue/green deployment strategy for minimizing downtime during updates.
-3. **Infrastructure Automation**: Use of Ansible or CloudFormation to provision and manage the AWS EKS cluster.
+3. **Infrastructure Automation**: Use of CloudFormation to provision and manage the AWS EKS cluster.
 4. **Scalability and Resilience**: Leveraging the benefits of Kubernetes for scalable and resilient application deployments.
 
 ## Project Structure
@@ -52,7 +52,7 @@ The Python web application used in this project is a simple "Hello World" applic
 ![GREEN_ECR](https://github.com/T128CL216/udacity-capstone/blob/0b988847ea2d98351c2f6f6f2c7b4ea452b1362f/screenshots/07-ECR_GREEN_IMAGE.png)
 
 ### Initial Cluster Creation Image deployment
-- After the blue image was created, a cluster was created used clouformation:
+- After the blue image was created, a cluster was created using clouformation:
 ![K8S_Create](https://github.com/T128CL216/udacity-capstone/blob/0b988847ea2d98351c2f6f6f2c7b4ea452b1362f/screenshots/02-CF_K8s_CLUSTER.png)
 - Then the "Blue Image" was deployed on the new cluster:
 ![Blue_deploy](https://github.com/T128CL216/udacity-capstone/blob/0b988847ea2d98351c2f6f6f2c7b4ea452b1362f/screenshots/03-INITIAL_IMAGE_DEPLOY.png)
@@ -67,6 +67,6 @@ The Python web application used in this project is a simple "Hello World" applic
 - A patch is performed on the inital "blue" service URL to point to the new "green service" seemlessly.
 - The blue service is being cleanuped to free some cluster ressources:
 ![cleanup](https://github.com/T128CL216/udacity-capstone/blob/9689ec92a6e55401c74d5f1edb645c75d429fd52/screenshots/10-GREEN_SERVICE_CLEAUP_2.png)
-**Finally , we can access the green image via the same link we were initially accessing the Blue image!"
+**Finally , we can access the green image via the same link we were initially accessing the Blue image!**
 ![green_url](https://github.com/T128CL216/udacity-capstone/blob/0b988847ea2d98351c2f6f6f2c7b4ea452b1362f/screenshots/09-GREEN_URL.png)
 =======
