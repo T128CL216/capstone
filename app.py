@@ -24,7 +24,7 @@ def metrics():
             mimetype='application/json'
     )
 
-    logger.info('Metrics request successfull')
+    logger./info('Metrics request successfull')
     return response
 
 @app.route('/')
