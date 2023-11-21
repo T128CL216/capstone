@@ -193,8 +193,6 @@ jobs:
                 BLUE_SERVICE_INFO=$(kubectl get svc $BLUE_SERVICE_NAME -o json)
                 # Update the blue-deploy service selector to match the green-deploy deployment
                 kubectl patch svc $BLUE_SERVICE_NAME -p '{"spec":{"selector":{"app":"green-deploy"}}}'
-                # Delete the green-deploy LoadBalancer service
-                kubectl delete svc $GREEN_SERVICE_NAME
                 echo "Routing switched to Green Deployment"
               else
                 echo "Smoke test failed, not switching routing"
@@ -238,4 +236,7 @@ workflows:
       - switch_routing:
           requires:
             - smoke_test
+      - delete_blue_pods:
+          requires:
+            - switch_routing
   
