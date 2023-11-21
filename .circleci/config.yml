@@ -49,9 +49,8 @@ jobs:
             GREEN_SERVICE_URL="http://${GREEN_BASE_URL}:8080/status"
             if curl -s ${GREEN_SERVICE_URL} | grep "OK" 
             then
+              SMOKE_TEST_SUCCESS=true
               echo "Setting success variable for routing switch"
-              echo 'SMOKE_TEST_SUCCESS=true' >> $BASH_ENV
-              echo 'export SMOKE_TEST_SUCCESS' >> $BASH_ENV
               echo "Persisting variable: $SMOKE_TEST_SUCCESS"
               echo "$SMOKE_TEST_SUCCESS" > ~/smoke_test_status.txt
             else
@@ -90,6 +89,14 @@ jobs:
             SMOKE_TEST_SUCCESS=$(<~/smoke_test_status.txt)
             echo "Reusing persisted variable: $SMOKE_TEST_SUCCESS"
             if [ "$SMOKE_TEST_SUCCESS" == "true" ]; then
+                BLUE_SERVICE_NAME="main-service"
+                GREEN_SERVICE_NAME="green-deploy"
+                # Get the existing blue-deploy service information
+                BLUE_SERVICE_INFO=$(kubectl get svc $BLUE_SERVICE_NAME -o json)
+                # Update the blue-deploy service selector to match the green-deploy deployment
+                kubectl patch svc $BLUE_SERVICE_NAME -p '{"spec":{"selector":{"app":"green-deploy"}}}'
+                # Delete the green-deploy LoadBalancer service
+                kubectl delete svc $GREEN_SERVICE_NAME
                 echo "Routing switched to Green Deployment"
               else
                 echo "Smoke test failed, not switching routing"
@@ -100,8 +107,10 @@ workflows:
   version: 2
   build_and_deploy:
     jobs:
-      #- deploy_green
-      - smoke_test
+      - deploy_green
+      - smoke_test:
+         requires:
+            - deploy_green
       - switch_routing:
           requires:
             - smoke_test
