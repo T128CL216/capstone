@@ -112,7 +112,7 @@ workflows:
   build_and_deploy:
     jobs:
      - deploy_green
-      - smoke_test
+      - smoke_test:
           requires:
             - deploy_green
       - switch_routing:
