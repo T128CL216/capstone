@@ -43,6 +43,9 @@ jobs:
             kubectl version --client
             aws eks --region us-east-1 update-kubeconfig --name capstone-eks
       - run:
+          name: Wait for 60 seconds
+          command: sleep 60
+      - run:
           name: Smoke Test Green deployment
           command: |
             GREEN_BASE_URL=$(kubectl get svc green-deploy -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
@@ -83,6 +86,7 @@ jobs:
             chmod +x kubectl
             mv kubectl /usr/local/bin/
             kubectl version --client
+            aws eks --region us-east-1 update-kubeconfig --name capstone-eks
       - run:
           name: Switch Routing to Green Deployment
           command: |
@@ -107,8 +111,10 @@ workflows:
   version: 2
   build_and_deploy:
     jobs:
-     # - deploy_green
+     - deploy_green
       - smoke_test
+          requires:
+            - deploy_green
       - switch_routing:
           requires:
             - smoke_test
