@@ -1,10 +1,8 @@
----
 version: 2.1
 orbs:
-    aws-cli: circleci/aws-cli@2.0.3
-
+  aws-cli: circleci/aws-cli@2.0.3
 jobs:
-    lint-code:
+  lint-code:
         docker:
             - image: python:3.8
         steps:
@@ -38,86 +36,203 @@ jobs:
                     echo "New Docker image version: $new_version"
                     curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7}  -d $new_version
                     echo "New Docker Tag published to kvdb.io"
-    build_docker_image:
-        docker:
-            - image: docker:20.10.18
-        steps:
-            - checkout
-            - setup_remote_docker
-            - run:
-                  name: Install Dependencies
-                  command: |
-                    apk add --no-cache python3 py3-pip
-                    apk add --no-cache curl
-                    ln -sf python3 /usr/bin/python
-                    python3 -m ensurepip
-                    pip3 install --upgrade pip
-                    pip install awscli
-            - run:
-                  name: Retrieve Latest Docker TAG from AWS ECR Repo and publish to kvdb
-                  command: |
-                    docker --version
-            - run:
-                  name: Build Docker image and Save it
-                  command: |
-                    tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
-                    echo "tag : $tag"
-                    docker build --tag=$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag .
-                    docker image save -o ~/image.tar $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
-            - persist_to_workspace:
-                  root: ~/
-                  paths:
-                      - image.tar
-    push_docker_image:
-        docker:
-            - image: docker:20.10.18
-        steps:
-            - attach_workspace:
-                  at: ~/
-            - checkout
-            - setup_remote_docker
-            - run:
-                  name: Install Dependencies
-                  command: |
-                    apk add --no-cache python3 py3-pip
-                    apk add --no-cache curl
-                    ln -sf python3 /usr/bin/python
-                    python3 -m ensurepip
-                    pip3 install --upgrade pip
-                    pip install awscli
-            - run:
-                  name: Load Docker Image
-                  command: docker load -i ~/image.tar
-            - run:
-                  name: lists Docker Image
-                  command: docker images
-            - run:
-                  name: Push Docker Image to AWS ECR
-                  command: |
-                    tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
-                    aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.$AWS_ECR_DNS
-                    docker push $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
-                    echo "$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag successfully pushed to AWS ECR"
+  build_docker_image:
+      docker:
+          - image: docker:20.10.18
+      steps:
+          - checkout
+          - setup_remote_docker
+          - run:
+                name: Install Dependencies
+                command: |
+                  apk add --no-cache python3 py3-pip
+                  apk add --no-cache curl
+                  ln -sf python3 /usr/bin/python
+                  python3 -m ensurepip
+                  pip3 install --upgrade pip
+                  pip install awscli
+          - run:
+                name: Build Docker image and Save it
+                command: |
+                  tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
+                  echo "tag : $tag"
+                  docker build --tag=$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag .
+                  docker image save -o ~/image.tar $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
+          - persist_to_workspace:
+                root: ~/
+                paths:
+                    - image.tar
+  push_docker_image:
+      docker:
+          - image: docker:20.10.18
+      steps:
+          - attach_workspace:
+                at: ~/
+          - checkout
+          - setup_remote_docker
+          - run:
+                name: Install Dependencies
+                command: |
+                  apk add --no-cache python3 py3-pip
+                  apk add --no-cache curl
+                  ln -sf python3 /usr/bin/python
+                  python3 -m ensurepip
+                  pip3 install --upgrade pip
+                  pip install awscli
+          - run:
+                name: Load Docker Image
+                command: docker load -i ~/image.tar
+          - run:
+                name: lists Docker Image
+                command: docker images
+          - run:
+                name: Push Docker Image to AWS ECR
+                command: |
+                  tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
+                  aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.$AWS_ECR_DNS
+                  docker push $AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag
+                  echo "$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag successfully pushed to AWS ECR"
+  deploy_green:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install kubectl
+          command: |
+            curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.28.3/2023-11-14/bin/linux/amd64/kubectl
+            chmod +x kubectl
+            mv kubectl /usr/local/bin/
+            kubectl version --client
+            aws eks --region us-east-1 update-kubeconfig --name capstone-eks
+
+      - run:
+          name: Deploy Green Image
+          command: |
+            tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
+            kubectl create deployment green-deploy --image=$AWS_ACCOUNT_ID.$AWS_ECR_DNS/$ECR_REPOSITORY_NAME:$tag --replicas 1
+            kubectl expose deployment/green-deploy --type="LoadBalancer" --port 8080
+  smoke_test:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install tar
+          command: | 
+            yum install -y tar
+      - run:
+          name: Install GZIP
+          command: | 
+            yum install -y gzip
+      - run:
+          name: Install kubectl
+          command: |
+            curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.28.3/2023-11-14/bin/linux/amd64/kubectl
+            chmod +x kubectl
+            mv kubectl /usr/local/bin/
+            kubectl version --client
+            aws eks --region us-east-1 update-kubeconfig --name capstone-eks
+      - run:
+          name: Wait for 60 seconds
+          command: sleep 60
+      - run:
+          name: Smoke Test Green deployment
+          command: |
+            GREEN_BASE_URL=$(kubectl get svc green-deploy -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            GREEN_SERVICE_URL="http://${GREEN_BASE_URL}:8080/status"
+            if curl -s ${GREEN_SERVICE_URL} | grep "OK" 
+            then
+              SMOKE_TEST_SUCCESS=true
+              echo "Setting success variable for routing switch"
+              echo "Persisting variable: $SMOKE_TEST_SUCCESS"
+              echo "$SMOKE_TEST_SUCCESS" > ~/smoke_test_status.txt
+            else
+              echo "Green Deployment smoke test failed"
+            fi
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - smoke_test_status.txt
+  switch_routing:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install tar
+          command: | 
+            yum install -y tar
+      - run:
+          name: Install GZIP
+          command: | 
+            yum install -y gzip
+      - attach_workspace:
+           at: ~/
+      - run:
+          name: Install kubectl
+          command: |
+            curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.28.3/2023-11-14/bin/linux/amd64/kubectl
+            chmod +x kubectl
+            mv kubectl /usr/local/bin/
+            kubectl version --client
+            aws eks --region us-east-1 update-kubeconfig --name capstone-eks
+      - run:
+          name: Switch Routing to Green Deployment
+          command: |
+            SMOKE_TEST_SUCCESS=$(<~/smoke_test_status.txt)
+            echo "Reusing persisted variable: $SMOKE_TEST_SUCCESS"
+            if [ "$SMOKE_TEST_SUCCESS" == "true" ]; then
+                BLUE_SERVICE_NAME="main-service"
+                GREEN_SERVICE_NAME="green-deploy"
+                # Get the existing blue-deploy service information
+                BLUE_SERVICE_INFO=$(kubectl get svc $BLUE_SERVICE_NAME -o json)
+                # Update the blue-deploy service selector to match the green-deploy deployment
+                kubectl patch svc $BLUE_SERVICE_NAME -p '{"spec":{"selector":{"app":"green-deploy"}}}'
+                echo "Routing switched to Green Deployment"
+              else
+                echo "Smoke test failed, not switching routing"
+              fi
+  delete_blue_pods:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install kubectl
+          command: |
+            curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.28.3/2023-11-14/bin/linux/amd64/kubectl
+            chmod +x kubectl
+            mv kubectl /usr/local/bin/
+            kubectl version --client
+            aws eks --region us-east-1 update-kubeconfig --name capstone-eks
+      - run:
+          name: delete old blue pods
+          command: |
+            GREEN_SERVICE_NAME="green-deploy"
+            kubectl delete svc $GREEN_SERVICE_NAME
+  
 workflows:
-    udacity_capstone:
-        jobs:
-            - lint-code:
-                  filters:
-                    branches:
-                        only:
-                          - main
-                          - dev-branch
-            - build_docker_image:
-                  requires: [lint-code]
-                  filters:
-                      branches:
-                          only:
-                              - main
-                              - dev-branch
-            - push_docker_image:
-                  requires: [build_docker_image]
-                  filters:
-                      branches:
-                          only:
-                              - main
-                              - dev-branch
+  version: 2
+  build_and_deploy:
+    jobs:
+      - lint-code
+      - build_docker_image:
+          requires:
+            - lint-code
+      - push_docker_image:
+          requires:
+            - build_docker_image
+      - deploy_green:
+          requires:
+            - push_docker_image
+      - smoke_test:
+          requires:
+            - deploy_green
+      - switch_routing:
+          requires:
+            - smoke_test
+      - delete_blue_pods:
+          requires:
+            - switch_routing
+  
