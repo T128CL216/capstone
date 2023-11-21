@@ -52,10 +52,6 @@ jobs:
                   pip3 install --upgrade pip
                   pip install awscli
           - run:
-                name: Retrieve Latest Docker TAG from AWS ECR Repo and publish to kvdb
-                command: |
-                  docker --version
-          - run:
                 name: Build Docker image and Save it
                 command: |
                   tag=$(curl --insecure https://kvdb.io/WyZcHsZopDbuuaV2g13iLM/image_${CIRCLE_WORKFLOW_ID:0:7})
