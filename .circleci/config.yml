@@ -111,7 +111,7 @@ workflows:
   version: 2
   build_and_deploy:
     jobs:
-     - deploy_green
+      - deploy_green
       - smoke_test:
           requires:
             - deploy_green
