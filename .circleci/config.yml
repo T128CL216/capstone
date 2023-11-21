@@ -202,7 +202,7 @@ jobs:
   delete_blue_pods:
     docker:
       - image: amazon/aws-cli
-     steps:
+    steps:
       - checkout
       - run:
           name: Install kubectl
@@ -212,7 +212,7 @@ jobs:
             mv kubectl /usr/local/bin/
             kubectl version --client
             aws eks --region us-east-1 update-kubeconfig --name capstone-eks
-     - run:
+      - run:
           name: delete old blue pods
           command: |
             GREEN_SERVICE_NAME="green-deploy"
