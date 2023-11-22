@@ -63,7 +63,7 @@ The Python web application used in this project is a simple "Hello World" applic
 - Blue/Green is successfully implemented by deploying the new "Green image" to new pods and new load balancer:
 ![Blue_url](https://github.com/T128CL216/udacity-capstone/blob/0b988847ea2d98351c2f6f6f2c7b4ea452b1362f/screenshots/08-GREEN_IMAGE_DEPLOY.png)
 - The Ec2 instance refreshed:
-![EC2_screenshot]()
+![EC2_screenshot](https://github.com/T128CL216/udacity-capstone/blob/main/screenshots/13-EC2_instances.png)
 - Then a smoke test is performed on the new GREEN URL by curling the /status endpoint of this new url:
 ![Smoke_test](https://github.com/T128CL216/udacity-capstone/blob/e598956da7dbf76f2de0e1d53c29162c501a55e8/screenshots/12-Smoke_Test.png)
 - A patch is performed on the inital "blue" service URL to point to the new "green service" seemlessly.
